@@ -1,0 +1,213 @@
+//Jacob Arias
+//Fun summative assignment for AP Comp SCI 
+//5-12-23
+//Battleship coded into java
+
+import java.util.*;
+
+public class Battleship
+{
+   private static Scanner sc = new Scanner(System.in);
+
+   public static void main(String[] args)
+   {
+   
+      char[][] grid = new char[8][8]; //frontend grid
+      int[][] backend = new int[8][8]; //backend grid with the #s
+      int[] returnedValues = new int[2]; //values returned from the strike method
+      boolean endGame = false; //check if conditions have been met to end the game
+      returnedValues[0] = 0; //this is the shiphits
+      returnedValues[1] = 15; //this is the torpedos
+      setArrays(grid, backend); //sets the front and backend 2D arrays to the start values
+      setShip(backend); //sets the ship to the position
+      
+      System.out.println("Welcome to the battleship game, in this game the grid is 8x8 with a 4 space long ship either going horizontally or diagonally.");
+      System.out.println("You get 15 torpedo shots and a miss is indicated by an O and hit is indicated by an X.");
+      System.out.println("The first coordinate you enter will be the Y coordinate and the 2nd one is the X coordinate");
+      System.out.println("Press Enter to start the game.");
+      
+      if (sc.hasNextLine()) {
+         String s = sc.nextLine(); //starts the game when an input is made
+      }
+       
+      do{ //do while loop that will continue shooting torpedos until a condition is met
+         returnedValues = strike(grid, backend, returnedValues[0], returnedValues[1]);
+         if(returnedValues[1] == 0 || returnedValues[0] == 4) //ends the game if all torpedos are shot or if all parts of the ship has been shot
+            endGame = true;
+      }while(endGame == false);
+      
+      if(returnedValues[0] == 4)
+         System.out.println("You Win!!!");
+      if(returnedValues[1] == 0 && returnedValues[0] < 4)
+         System.out.println("You Lose");
+   
+   }//end main
+   
+   /*/
+   Method Name: setArrays(char[][], int[][])
+   Purpose: Fills in the 2ds arrays with the values when the game starts
+   precondition: the 2d arrays have been instantiated in the main
+   postcondition: char 2d array has been set to all . and the int 2d array has been set to all 0
+   /*/
+   
+   public static void setArrays(char[][] grid, int[][] backend)
+   {
+      for(int i = 0; i < grid.length; i++) //sets front end grid
+      {
+         for(int j = 0; j < grid[0].length; j++)
+         {
+            grid[i][j] = '.';
+         }
+      } 
+      
+      for(int[] i: backend) //sets backend grid
+      {
+         for(int j: i)
+         {
+            j = 0;
+         }
+      } 
+   }//end setArrays
+   
+   /*/
+   Method Name: setShip(int[][])
+   Purpose: Sets the ship to a random spot with 4 spaces
+   precondition: all the 2d arrays have been set to their default value in the setArray() method
+   postcondition: 4 spots of the board have been set to have ships and the 2 2d arrays have been updated to resemble it
+   /*/
+   
+   public static void setShip(int[][] backend)
+   {
+      int direction = (int)(Math.random() * 2); //0 means horizontal, 1 means vertical
+      int startX = (int)(Math.random() * 8); //starting X position
+      int startY = (int)(Math.random() * 8); //starting Y position
+      int movesTo = (int)(Math.random() * 2); //0 = down/right, 1 = up, left
+      
+      if(movesTo == 0) //if movesTo is 0 then it will be a positiive int meaning that it can move right or down
+         movesTo = 4;
+      else
+         movesTo = -4; //if movesTo is 1 then it will be a negative int meaning that it can move left or up
+      
+      if(direction == 0) //will set the ship to a horizontal pos
+      {
+         if(startX + movesTo >= 8 || startX + movesTo < 0) //if the start pos of X + 4 is less than 0 or greater than 8 then it will invert the way it goes so all 4 parts are on the ship
+            movesTo *= -1; //inverts the way the ship is set
+         for(int i = 0; i < 4; i++)
+         {
+            backend[startX][startY] = 1; //sets the backend ints to 1 meaning that there is a ship but hasn't been shot at yet
+            if(movesTo == 4)
+               startX++; //makes the ships part move right to place it
+            else
+               startX--; //makes the ship parts move left to place it
+         }
+      }
+      else //if moveTo is 1 meaning that it will move vertically
+      {
+         if(startY + movesTo >= 8 || startY + movesTo < 0)//if the start pos of Y + 4 is less than 0 or greater than 8 then it will invert the way it goes so all 4 parts are on the ship
+            movesTo *= -1; //inverts the way the ship is set
+         for(int i = 0; i < 4; i++)
+         {
+            backend[startX][startY] = 1;
+            if(movesTo == 4) //makes the ships part move up to place it
+               startY++;
+            else //makes the ships part move down to place it
+               startY--;
+         }
+      }
+   
+   } //end setShip
+   
+   /*/
+   Method Name: strike(char[][], int[][], int, int torpedos
+   Purpose: Main part of the game where the user gets to shoot torpedos at coordinates on the board
+   precondition: The 2d arrays have been set and the ship has been set
+   postcondition: A torpedo has been shot and depending on what it hits the game will be updated to process it
+   /*/
+   
+   public static int[] strike(char[][] grid, int[][] backend, int shipHits, int torpedos)
+   {
+      int[] coords = new int[2]; //the 2 coordinates that the user will enter
+      int[] toReturn = new int[2]; //the 2 ints that the user will return, toReturn[0] being the amount of parts of the ship hit and toReturn[1] being the amount of torpedos left
+      System.out.println(torpedos + " torpedos remain. Fire Where?");    
+      boolean displayBoard = true; //boolean that represents if the board will be shown after a torpedo is shot
+         
+      coords[0] = -1;
+      coords[1] = -1;
+         
+      do
+      {
+         try
+         {
+         String[] input = sc.nextLine().split(" ", 2); //splits the 2 coordinates input by the space
+         coords[0] = Integer.parseInt(input[0]) - 1; //the first coordinate of the input string converted to an int
+         coords[1] = Integer.parseInt(input[1]) - 1; //the second coordinate of the input string converted to an int
+         if(coords[0] < 0 || coords[0] >= 8) //if the first coordinate is invalid then it will tell the user
+            System.out.println("What you entered for the first coordinate is not allowed, you can only enter a number from 1-8");
+         if(coords[1] < 0 || coords[1] >= 8) //if the second coordinate is invalid then it will tell the user
+            System.out.println("What you entered for the second coordinate is not allowed, you can only enter a number from 1-8");
+         }
+         catch(Exception ex) //catches any error from the try and will the user that the input was incorrect if it catches anything
+         {
+            System.out.println("What you entered is not allowed, you must input the coordinates in the following format: # #");
+         }
+      }while((coords[0] < 0 || coords[0] >= 8) || (coords[1] < 0 || coords[1] >= 8)); //error checking to see if the user input 2 valid coordinate
+             
+        
+      if(backend[coords[0]][coords[1]] == 2 || backend[coords[0]][coords[1]] == 3) //if a torpedo has been shot at the spot already 
+      {
+         System.out.println("You can't shoot at a spot you've already shot at...");
+         torpedos++; //increase the amount of torpedos because later it will be deducted
+         displayBoard = false; //wont display the board since that spot has been shot at already
+      }
+      
+      if(backend[coords[0]][coords[1]] == 0) //if that spot hasnt been shot at yet and there is no ship
+      {
+         System.out.println("Miss!");
+         grid[coords[0]][coords[1]] = 'O'; //changes the front end 2D array to show that its been shot at 
+         backend[coords[0]][coords[1]] = 2; //changes the backend to resemble that its been shot at
+      }
+      
+      if(backend[coords[0]][coords[1]] == 1) //if that spot hasnt been shot at yet and there is a ship
+      {
+         shipHits++; //adds 1 to the counter that shows how many parts of the ship has been shot
+         System.out.println("Hit! There are now " + (4 - shipHits) + " spots left to hit.");
+         grid[coords[0]][coords[1]] = 'X';//changes the front end 2D array to show that its been shot at 
+         backend[coords[0]][coords[1]] = 3; //changes the backend to resemble that its been shot at
+      }
+   
+      System.out.println();
+      
+      if(displayBoard == true) //if the boolean is true it will display the frontend 2D array
+      {
+         for(int i = 0; i < grid.length; i++)
+         {
+            for(int j = 0; j < grid[0].length; j++)
+            {
+               System.out.print(grid[i][j]);
+            }
+            System.out.println();
+         
+         } 
+      }
+      
+      torpedos--; //decrements the amount of torpedos left
+      
+      toReturn[0] = shipHits;
+      toReturn[1] = torpedos;
+      
+      return toReturn;
+        
+   }
+   
+}//end strike
+
+
+
+
+
+
+
+
+
+
+
